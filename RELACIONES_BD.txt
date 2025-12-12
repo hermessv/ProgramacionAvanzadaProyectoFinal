@@ -1,0 +1,180 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║           DIAGRAMA DE RELACIONES - BASE DE DATOS HOTELMASCARGA                  ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+═══════════════════════════════════════════════════════════════════════════════════
+1. CLAVES PRIMARIAS (IDENTIDADES)
+═══════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────┬──────────────────────┐
+│     TABLA           │   CLAVE PRIMARIA     │
+├─────────────────────┼──────────────────────┤
+│ Cliente             │ ClienteID (INT)      │
+│ ColaEspera          │ ColaID (INT)         │
+│ Disponibilidad      │ DisponibilidadID     │
+│ Habitacion          │ HabitacionID (INT)   │
+│ HistorialReserva    │ HistorialID (INT)    │
+│ Reserva             │ ReservaID (INT)      │
+│ Rol                 │ RolID (INT)          │
+│ TipoHabitacion      │ TipoHabitacionID     │
+│ Usuario             │ UsuarioID (INT)      │
+│ UsuarioRol          │ (UsuarioID + RolID)  │
+└─────────────────────┴──────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+2. RELACIONES (CLAVES FORÁNEAS)
+═══════════════════════════════════════════════════════════════════════════════════
+
+┌─ USUARIOS Y ROLES ─────────────────────────────────────────────────────────┐
+│                                                                             │
+│   Usuario ◄─────── UsuarioRol ─────────► Rol                              │
+│   (1)              (N a N)               (1)                               │
+│   - UsuarioID                           - RolID                           │
+│   - NombreUsuario                       - NombreRol                       │
+│   - ContrasenaHash                                                        │
+│   - Activo                                                                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ HABITACIONES ─────────────────────────────────────────────────────────────┐
+│                                                                             │
+│   TipoHabitacion ◄─────── Habitacion                                      │
+│   (1)                     (N)                                              │
+│   - TipoHabitacionID      - HabitacionID                                  │
+│   - Nombre                - TipoHabitacionID (FK)                         │
+│   - Descripcion           - Codigo                                        │
+│                           - Activa                                        │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ RESERVAS ─────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│                      Cliente                  Habitacion                   │
+│                        (1)                       (1)                       │
+│                         ▲                        ▲                        │
+│                         │                        │                        │
+│                         └────────┬───────────────┘                        │
+│                                  │                                        │
+│                         Reserva  │                                        │
+│                           (N)    │                                        │
+│                         - ReservaID                                       │
+│                         - ClienteID (FK)                                  │
+│                         - HabitacionID (FK)                               │
+│                         - Fecha                                           │
+│                         - Estado                                          │
+│                                                                             │
+│    HistorialReserva ◄───── Reserva                                        │
+│    (N)                     (1)                                             │
+│    - HistorialID           - ReservaID (FK)                               │
+│    - ReservaID (FK)        - FechaOperacion                               │
+│    - Accion                - Accion                                       │
+│    - Detalle               - Detalle                                      │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ DISPONIBILIDAD ────────────────────────────────────────────────────────────┐
+│                                                                              │
+│   Habitacion ◄─────── Disponibilidad                                       │
+│   (1)                 (N)                                                   │
+│   - HabitacionID      - DisponibilidadID                                   │
+│                       - HabitacionID (FK)                                  │
+│                       - Fecha                                              │
+│                       - Disponible                                         │
+│                                                                              │
+│   Nota: Única (HabitacionID + Fecha)                                       │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ COLA DE ESPERA ────────────────────────────────────────────────────────────┐
+│                                                                              │
+│   Cliente                TipoHabitacion                                    │
+│   (1)                    (1)                                                │
+│    ▲                      ▲                                                │
+│    │                      │                                                │
+│    └────────┬─────────────┘                                               │
+│             │                                                              │
+│      ColaEspera                                                            │
+│        (N)                                                                 │
+│      - ColaID                                                              │
+│      - ClienteID (FK)                                                      │
+│      - TipoHabitacionID (FK)                                               │
+│      - Fecha                                                               │
+│      - Estado                                                              │
+│      - FechaRegistro                                                       │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+3. CARDINALIDADES (RELACIONES)
+═══════════════════════════════════════════════════════════════════════════════════
+
+RELACIÓN                          TIPO        DESCRIPCIÓN
+──────────────────────────────────────────────────────────────────────────────────
+
+Usuario ───────► UsuarioRol      1 a N       1 Usuario puede tener múltiples Roles
+Rol ───────────► UsuarioRol      1 a N       1 Rol puede asignarse a múltiples Usuarios
+
+TipoHabitacion ─► Habitacion     1 a N       1 Tipo tiene múltiples Habitaciones
+TipoHabitacion ─► ColaEspera     1 a N       1 Tipo puede tener cola de espera
+
+Habitacion ────► Disponibilidad  1 a N       1 Habitación tiene disponibilidad diaria
+Habitacion ────► Reserva         1 a N       1 Habitación puede tener múltiples reservas
+
+Cliente ───────► Reserva         1 a N       1 Cliente puede hacer múltiples reservas
+Cliente ───────► ColaEspera      1 a N       1 Cliente puede estar en múltiples colas
+
+Reserva ───────► HistorialReserva 1 a N      1 Reserva tiene historial de cambios
+
+═══════════════════════════════════════════════════════════════════════════════════
+4. INTEGRIDAD REFERENCIAL
+═══════════════════════════════════════════════════════════════════════════════════
+
+✓ ColaEspera.ClienteID ──────► Cliente.ClienteID
+✓ ColaEspera.TipoHabitacionID ► TipoHabitacion.TipoHabitacionID
+✓ Disponibilidad.HabitacionID ► Habitacion.HabitacionID
+✓ Habitacion.TipoHabitacionID ► TipoHabitacion.TipoHabitacionID
+✓ HistorialReserva.ReservaID ─► Reserva.ReservaID
+✓ Reserva.ClienteID ──────────► Cliente.ClienteID
+✓ Reserva.HabitacionID ───────► Habitacion.HabitacionID
+✓ UsuarioRol.UsuarioID ───────► Usuario.UsuarioID
+✓ UsuarioRol.RolID ───────────► Rol.RolID
+
+═══════════════════════════════════════════════════════════════════════════════════
+5. RESTRICCIONES ÚNICAS
+═══════════════════════════════════════════════════════════════════════════════════
+
+• Disponibilidad: (HabitacionID + Fecha) ÚNICA
+  └─ No puede haber 2 registros de disponibilidad para la misma habitación y fecha
+
+• Reserva: (ClienteID + HabitacionID + Fecha) ÚNICA
+  └─ Un cliente no puede reservar la misma habitación en la misma fecha dos veces
+
+• TipoHabitacion.Nombre: ÚNICO
+  └─ No puede haber tipos de habitación con el mismo nombre
+
+• Habitacion.Codigo: ÚNICO
+  └─ Cada habitación tiene un código único (S101, D201, U301, etc)
+
+• Usuario.NombreUsuario: ÚNICO
+  └─ Cada usuario tiene un nombre único para login
+
+• Cliente.Identificacion: ÚNICA
+  └─ Cada cliente tiene una identificación única (cédula/pasaporte)
+
+═══════════════════════════════════════════════════════════════════════════════════
+6. ÍNDICES PARA RENDIMIENTO
+═══════════════════════════════════════════════════════════════════════════════════
+
+• IX_Reserva_Cliente: Índice en Reserva.ClienteID
+  └─ Acelera búsquedas de reservas por cliente
+
+• IX_Reserva_Fecha: Índice en Reserva.Fecha
+  └─ Acelera búsquedas de reservas por fecha
+
+• IX_Disponibilidad_Fecha: Índice en Disponibilidad.Fecha
+  └─ Acelera búsquedas de disponibilidad por fecha
+
+• IX_ColaEspera_FechaEstado: Índice en ColaEspera(Fecha, Estado)
+  └─ Acelera búsquedas de cola activa por fecha
+
+═══════════════════════════════════════════════════════════════════════════════════

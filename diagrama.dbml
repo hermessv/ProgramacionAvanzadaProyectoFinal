@@ -1,0 +1,84 @@
+Project HotelMasCarga {
+  database_type: 'MySQL'
+  note: 'Sistema de Gestión de Reservas de Hotel'
+}
+
+Table Rol {
+  RolID int [pk, increment]
+  NombreRol varchar(50) [unique, not null]
+}
+
+Table Usuario {
+  UsuarioID int [pk, increment]
+  NombreUsuario varchar(50) [unique, not null]
+  ContrasenaHash varchar(255) [not null]
+  Activo boolean [default: true, not null]
+}
+
+Table UsuarioRol {
+  UsuarioID int [pk]
+  RolID int [pk]
+}
+
+Table TipoHabitacion {
+  TipoHabitacionID int [pk, increment]
+  Nombre varchar(100) [unique, not null]
+  Descripcion varchar(255)
+}
+
+Table Habitacion {
+  HabitacionID int [pk, increment]
+  TipoHabitacionID int [not null]
+  Codigo varchar(50) [unique, not null]
+  Activa boolean [default: true, not null]
+}
+
+Table Cliente {
+  ClienteID int [pk, increment]
+  NombreCompleto varchar(150) [not null]
+  Identificacion varchar(20) [unique, not null]
+  Telefono varchar(20)
+  Correo varchar(100)
+}
+
+Table Disponibilidad {
+  DisponibilidadID int [pk, increment]
+  HabitacionID int [not null]
+  Fecha date [not null]
+  Disponible boolean [default: true, not null]
+}
+
+Table Reserva {
+  ReservaID int [pk, increment]
+  ClienteID int [not null]
+  HabitacionID int [not null]
+  Fecha date [not null]
+  Estado varchar(20) [default: 'Activa', not null]
+}
+
+Table HistorialReserva {
+  HistorialID int [pk, increment]
+  ReservaID int [not null]
+  FechaOperacion datetime [not null]
+  Accion varchar(50) [not null]
+  Detalle varchar(255)
+}
+
+Table ColaEspera {
+  ColaID int [pk, increment]
+  ClienteID int [not null]
+  TipoHabitacionID int [not null]
+  Fecha date [not null]
+  Estado varchar(20) [default: 'Activo', not null]
+  FechaRegistro datetime [not null]
+}
+
+Ref: UsuarioRol.UsuarioID > Usuario.UsuarioID
+Ref: UsuarioRol.RolID > Rol.RolID
+Ref: Habitacion.TipoHabitacionID > TipoHabitacion.TipoHabitacionID
+Ref: Disponibilidad.HabitacionID > Habitacion.HabitacionID
+Ref: Reserva.ClienteID > Cliente.ClienteID
+Ref: Reserva.HabitacionID > Habitacion.HabitacionID
+Ref: HistorialReserva.ReservaID > Reserva.ReservaID
+Ref: ColaEspera.ClienteID > Cliente.ClienteID
+Ref: ColaEspera.TipoHabitacionID > TipoHabitacion.TipoHabitacionID
